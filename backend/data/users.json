@@ -1,0 +1,11 @@
+{
+  "admin": {
+    "username": "admin",
+    "password_hash": "$2b$12$wC0i2TTllCavbqK4J7iCrOcUO6vdNpm58GHjPqBUp43eilzRsZAeO",
+    "full_name": "Admin User",
+    "role": "admin",
+    "user_type": "admin",
+    "avatar": "executive",
+    "created_at": "2026-10-29T10:00:00Z"
+  }
+}
