@@ -1,4 +1,4 @@
-const API_BASE = '/api'
+import { API_BASE } from './config'
 
 export async function fetchPatientsApi(search = '') {
   const query = search ? `?search=${encodeURIComponent(search)}` : ''

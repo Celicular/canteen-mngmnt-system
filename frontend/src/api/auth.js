@@ -1,4 +1,4 @@
-const API_BASE = '/api'
+import { API_BASE } from './config'
 
 export async function loginApi({ username, password, saveUser = false, quickLogin = false }) {
   const response = await fetch(`${API_BASE}/auth/login`, {
