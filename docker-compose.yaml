@@ -7,12 +7,14 @@ services:
       dockerfile: Dockerfile
     container_name: canteen_backend
     ports:
-      - "21396:8000"
+      - "8000:8000"
     volumes:
       - sqlite_data:/app/data
     environment:
       - PYTHONUNBUFFERED=1
+      - DATA_DIR=/app/data
     restart: unless-stopped
 
 volumes:
   sqlite_data:
+    driver: local

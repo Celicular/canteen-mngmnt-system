@@ -3,8 +3,8 @@ import json
 import os
 import sqlite3
 
-DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
-DB_PATH = os.path.join(DATA_DIR, "canteen.db")
+DATA_DIR = os.environ.get("DATA_DIR", os.path.join(os.path.dirname(__file__), "data"))
+DB_PATH = os.environ.get("SQLITE_DB_PATH", os.path.join(DATA_DIR, "canteen.db"))
 LEGACY_USERS_FILE = os.path.join(DATA_DIR, "users.json")
 
 def get_connection():

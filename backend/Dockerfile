@@ -4,11 +4,16 @@ WORKDIR /app
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
+ENV DATA_DIR=/app/data
+
+RUN mkdir -p /app/data
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
+
+VOLUME ["/app/data"]
 
 EXPOSE 8000
 
