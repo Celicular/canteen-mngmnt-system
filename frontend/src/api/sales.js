@@ -8,6 +8,8 @@ export async function fetchSalesApi({
   allDates = false,
   mealType,
   cashier,
+  patientId,
+  paymentStatus,
 } = {}) {
   const params = new URLSearchParams()
   if (allDates) {
@@ -24,6 +26,12 @@ export async function fetchSalesApi({
   }
   if (cashier && cashier !== 'All') {
     params.set('cashier', cashier)
+  }
+  if (patientId) {
+    params.set('patient_id', patientId)
+  }
+  if (paymentStatus && paymentStatus !== 'All') {
+    params.set('payment_status', paymentStatus)
   }
 
   const query = params.toString() ? `?${params.toString()}` : ''
@@ -96,6 +104,7 @@ export async function createSaleApi({
   ward_number,
   patient_id,
   meal_type,
+  payment_status = 'Paid',
   items,
 }) {
   const response = await apiFetch(`${API_BASE}/sales`, {
@@ -109,6 +118,7 @@ export async function createSaleApi({
       ward_number,
       patient_id,
       meal_type,
+      payment_status,
       items,
     }),
   })
@@ -123,7 +133,7 @@ export async function createSaleApi({
 
 export async function updateSaleApi(
   id,
-  { customer_name, customer_phone, ward_number, patient_id, meal_type, items }
+  { customer_name, customer_phone, ward_number, patient_id, meal_type, payment_status = 'Paid', items }
 ) {
   const response = await apiFetch(`${API_BASE}/sales/${id}`, {
     method: 'PUT',
@@ -136,6 +146,7 @@ export async function updateSaleApi(
       ward_number,
       patient_id,
       meal_type,
+      payment_status,
       items,
     }),
   })
@@ -143,6 +154,36 @@ export async function updateSaleApi(
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}))
     throw new Error(errorData.detail || 'Failed to update sale')
+  }
+
+  return response.json()
+}
+
+export async function updateSalePaymentStatusApi(id, payment_status) {
+  const response = await apiFetch(`${API_BASE}/sales/${id}/payment-status`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ payment_status }),
+  })
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}))
+    throw new Error(errorData.detail || 'Failed to update payment status')
+  }
+
+  return response.json()
+}
+
+export async function fetchPatientInvoiceApi(patientId) {
+  const response = await apiFetch(`${API_BASE}/invoices/patient/${patientId}`, {
+    method: 'GET',
+  })
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}))
+    throw new Error(errorData.detail || 'Failed to fetch patient invoice data')
   }
 
   return response.json()

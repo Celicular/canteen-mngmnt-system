@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage'
 import DashboardLayout from './layouts/DashboardLayout'
 import DashboardPage from './pages/DashboardPage'
 import SalesPage from './pages/SalesPage'
+import InvoicesPage from './pages/InvoicesPage'
 import ReportsPage from './pages/ReportsPage'
 import StockPage from './pages/StockPage'
 import ItemsPage from './pages/ItemsPage'
@@ -100,6 +101,7 @@ function App() {
             >
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/sales" element={<SalesPage />} />
+              <Route path="/invoices" element={<InvoicesPage />} />
               <Route path="/stock" element={<StockPage />} />
               <Route path="/reports" element={<ReportsPage />} />
               <Route

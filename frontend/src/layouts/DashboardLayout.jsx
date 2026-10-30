@@ -15,6 +15,7 @@ import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined'
 import FastfoodOutlinedIcon from '@mui/icons-material/FastfoodOutlined'
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined'
 import ReceiptLongOutlinedIcon from '@mui/icons-material/ReceiptLongOutlined'
+import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined'
 import AssessmentOutlinedIcon from '@mui/icons-material/AssessmentOutlined'
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined'
 import AvatarBadge from '../components/AvatarBadge'
@@ -24,6 +25,7 @@ import { useAuth } from '../context/AuthContext'
 const NAV_ITEMS = [
   { label: 'Overview', shortLabel: 'Overview', path: '/dashboard', Icon: DashboardOutlinedIcon },
   { label: 'Sales & Billing', shortLabel: 'Sales', path: '/sales', Icon: ReceiptLongOutlinedIcon },
+  { label: 'Invoices', shortLabel: 'Invoices', path: '/invoices', Icon: DescriptionOutlinedIcon },
   { label: 'Stock & Expenses', shortLabel: 'Stock', path: '/stock', Icon: Inventory2OutlinedIcon },
   { label: 'Reports', shortLabel: 'Reports', path: '/reports', Icon: AssessmentOutlinedIcon },
   { label: 'Menu Items', shortLabel: 'Menu', path: '/items', Icon: FastfoodOutlinedIcon, roles: ['admin', 'owner'] },
@@ -50,6 +52,7 @@ function DashboardLayout({ children }) {
 
   const getPageTitle = () => {
     if (location.pathname === '/sales') return 'Sales & Billing'
+    if (location.pathname === '/invoices') return 'Invoices'
     if (location.pathname === '/stock') return 'Stock & Expenditures'
     if (location.pathname === '/reports') return 'Reports & Analytics'
     if (location.pathname === '/items') return 'Menu Items'

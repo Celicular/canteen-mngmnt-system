@@ -3,7 +3,6 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions,
   TextField,
   Button,
   Box,
@@ -34,6 +33,7 @@ function CreateSaleDialog({ open, onClose, onSaleSaved, initialSale = null }) {
   const [wardNumber, setWardNumber] = useState('')
   const [patientId, setPatientId] = useState(null)
   const [mealType, setMealType] = useState('Snack')
+  const [paymentStatus, setPaymentStatus] = useState('Paid')
 
   const [menuItems, setMenuItems] = useState([])
   const [patients, setPatients] = useState([])
@@ -74,6 +74,7 @@ function CreateSaleDialog({ open, onClose, onSaleSaved, initialSale = null }) {
       setWardNumber(initialSale.ward_number || '')
       setPatientId(initialSale.patient_id || null)
       setMealType(initialSale.meal_type || 'Snack')
+      setPaymentStatus(initialSale.payment_status || 'Paid')
       if (initialSale.items && initialSale.items.length > 0) {
         setRows(
           initialSale.items.map((item, idx) => ({
@@ -93,6 +94,7 @@ function CreateSaleDialog({ open, onClose, onSaleSaved, initialSale = null }) {
       setWardNumber('')
       setPatientId(null)
       setMealType('Snack')
+      setPaymentStatus('Paid')
       setRows([{ id: 1, item_name: '', unit_price: 0, quantity: 1, item_id: null }])
     }
     setError('')
@@ -181,12 +183,11 @@ function CreateSaleDialog({ open, onClose, onSaleSaved, initialSale = null }) {
   }
 
   const handleRemoveRow = (rowIndex) => {
-    setRows((prev) => {
-      if (prev.length <= 1) {
-        return [{ id: 1, item_name: '', unit_price: 0, quantity: 1, item_id: null }]
-      }
-      return prev.filter((_, idx) => idx !== rowIndex)
-    })
+    if (rows.length === 1) {
+      setRows([{ id: 1, item_name: '', unit_price: 0, quantity: 1, item_id: null }])
+      return
+    }
+    setRows((prev) => prev.filter((_, idx) => idx !== rowIndex))
   }
 
   const handleSelectPatient = (patient) => {
@@ -199,29 +200,26 @@ function CreateSaleDialog({ open, onClose, onSaleSaved, initialSale = null }) {
 
   const handlePatientAdded = (newPatient) => {
     setPatients((prev) => [newPatient, ...prev])
-    setCustomerName(newPatient.name)
-    setCustomerPhone(newPatient.mobile_number || '')
-    setWardNumber(newPatient.ward_number || '')
-    setPatientId(newPatient.id)
-    setPatientSearchOpen(false)
+    handleSelectPatient(newPatient)
+    setAddPatientModalOpen(false)
   }
 
-  const patientQuery = customerName.toLowerCase().trim()
-  const patientMatches =
-    patientQuery && customerName !== 'Walk-in Customer'
-      ? patients.filter(
-          (p) =>
-            p.name.toLowerCase().includes(patientQuery) ||
-            (p.mobile_number && p.mobile_number.includes(patientQuery)) ||
-            (p.ward_number && p.ward_number.toLowerCase().includes(patientQuery))
-        ).slice(0, 5)
-      : []
+  const filteredPatients = patients.filter((p) => {
+    if (!customerName || customerName === 'Walk-in Customer') return true
+    const term = customerName.toLowerCase().trim()
+    return (
+      p.name.toLowerCase().includes(term) ||
+      (p.ward_number && p.ward_number.toLowerCase().includes(term)) ||
+      (p.mobile_number && p.mobile_number.includes(term))
+    )
+  })
 
-  const validRows = rows.filter((r) => r.item_name.trim())
-  const grandTotal = validRows.reduce(
-    (sum, r) => sum + (r.quantity || 1) * (r.unit_price || 0),
-    0
-  )
+  const grandTotal = rows.reduce((sum, r) => {
+    if (!r.item_name.trim()) return sum
+    return sum + (r.quantity || 1) * (r.unit_price || 0)
+  }, 0)
+
+  const validRows = rows.filter((r) => r.item_name.trim() && r.quantity > 0)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -240,6 +238,7 @@ function CreateSaleDialog({ open, onClose, onSaleSaved, initialSale = null }) {
       ward_number: wardNumber.trim(),
       patient_id: patientId,
       meal_type: mealType,
+      payment_status: paymentStatus,
       items: validRows.map((r) => ({
         item_id: r.item_id,
         item_name: r.item_name.trim(),
@@ -273,6 +272,7 @@ function CreateSaleDialog({ open, onClose, onSaleSaved, initialSale = null }) {
     setWardNumber('')
     setPatientId(null)
     setMealType('Snack')
+    setPaymentStatus('Paid')
     setRows([{ id: 1, item_name: '', unit_price: 0, quantity: 1, item_id: null }])
     setError('')
     onClose()
@@ -287,12 +287,15 @@ function CreateSaleDialog({ open, onClose, onSaleSaved, initialSale = null }) {
         fullWidth
         PaperProps={{
           sx: {
-            borderRadius: '24px',
-            p: { xs: 2, sm: 2.5 },
+            borderRadius: { xs: '20px', sm: '24px' },
+            p: 0,
             backgroundColor: '#ffffff',
-            boxShadow: '0 25px 60px -15px rgba(15, 23, 42, 0.2)',
+            boxShadow: '0 25px 60px -15px rgba(15, 23, 42, 0.25)',
             maxWidth: '860px !important',
-            maxHeight: '92vh',
+            width: { xs: 'calc(100% - 16px)', sm: '100%' },
+            maxHeight: { xs: '94vh', sm: '90vh' },
+            height: { xs: '94vh', sm: 'auto' },
+            m: { xs: '8px auto', sm: '32px auto' },
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
@@ -304,17 +307,17 @@ function CreateSaleDialog({ open, onClose, onSaleSaved, initialSale = null }) {
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            pb: 1,
-            pt: 0.5,
-            px: 1.5,
+            p: { xs: 2, sm: 2.5 },
+            borderBottom: '1px solid #f1f5f9',
+            flexShrink: 0,
           }}
         >
           <Box>
-            <Typography variant="h6" sx={{ fontWeight: 700, color: '#0f172a', fontSize: '1.25rem' }}>
+            <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a', fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
               {isEditing ? 'Edit Sale Transaction' : 'Record New Sale'}
             </Typography>
-            <Typography variant="body2" sx={{ color: '#64748b', fontSize: '0.825rem', mt: 0.25 }}>
-              Hospital canteen billing with patient directory autocomplete, auto-line addition, and live totals
+            <Typography variant="body2" sx={{ color: '#64748b', fontSize: '0.78rem', mt: 0.25 }}>
+              Hospital canteen billing with patient directory autocomplete
             </Typography>
           </Box>
           <IconButton onClick={handleClose} disabled={submitting} size="small" sx={{ color: '#94a3b8' }}>
@@ -338,11 +341,11 @@ function CreateSaleDialog({ open, onClose, onSaleSaved, initialSale = null }) {
               display: 'flex',
               flexDirection: 'column',
               gap: 2,
-              px: 1.5,
-              py: 1,
+              p: { xs: 2, sm: 2.5 },
               flex: 1,
               minHeight: 0,
-              overflow: 'hidden',
+              overflowY: 'auto',
+              WebkitOverflowScrolling: 'touch',
             }}
           >
             {error && (
@@ -351,10 +354,10 @@ function CreateSaleDialog({ open, onClose, onSaleSaved, initialSale = null }) {
               </Alert>
             )}
 
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1.4fr 1fr 1fr' }, gap: 1.5 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
               <Box sx={{ position: 'relative' }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                  <Typography sx={{ fontWeight: 600, color: '#475569', fontSize: '0.78rem' }}>
+                  <Typography sx={{ fontWeight: 700, color: '#475569', fontSize: '0.78rem', textTransform: 'uppercase' }}>
                     Customer / Patient Name
                   </Typography>
                   <Button
@@ -370,8 +373,6 @@ function CreateSaleDialog({ open, onClose, onSaleSaved, initialSale = null }) {
                       borderRadius: '8px',
                       backgroundColor: '#eff6ff',
                       color: '#2563eb',
-                      border: '1px solid #bfdbfe',
-                      lineHeight: 1.2,
                       '&:hover': { backgroundColor: '#dbeafe' },
                     }}
                   >
@@ -383,35 +384,35 @@ function CreateSaleDialog({ open, onClose, onSaleSaved, initialSale = null }) {
                   fullWidth
                   size="small"
                   id="customer-name"
-                  placeholder="Type patient name or Walk-in..."
+                  placeholder="Type patient name or Walk-in Customer..."
                   value={customerName}
                   onChange={(e) => {
                     setCustomerName(e.target.value)
+                    setPatientId(null)
                     setPatientSearchOpen(true)
-                    if (patientId) setPatientId(null)
                   }}
                   onFocus={() => setPatientSearchOpen(true)}
-                  onBlur={() => setTimeout(() => setPatientSearchOpen(false), 250)}
                   disabled={submitting}
                 />
 
-                {patientSearchOpen && patientMatches.length > 0 && (
+                {patientSearchOpen && filteredPatients.length > 0 && customerName !== 'Walk-in Customer' && (
                   <Box
                     sx={{
                       position: 'absolute',
                       top: '100%',
                       left: 0,
                       right: 0,
-                      zIndex: 110,
+                      zIndex: 200,
                       mt: 0.5,
                       backgroundColor: '#ffffff',
                       borderRadius: '14px',
                       boxShadow: '0 12px 30px rgba(15, 23, 42, 0.16)',
                       border: '1px solid #cbd5e1',
-                      overflow: 'hidden',
+                      maxHeight: 200,
+                      overflowY: 'auto',
                     }}
                   >
-                    {patientMatches.map((patient) => (
+                    {filteredPatients.map((patient) => (
                       <Box
                         key={patient.id}
                         onMouseDown={() => handleSelectPatient(patient)}
@@ -422,7 +423,6 @@ function CreateSaleDialog({ open, onClose, onSaleSaved, initialSale = null }) {
                           justifyContent: 'space-between',
                           alignItems: 'center',
                           cursor: 'pointer',
-                          borderBottom: '1px solid #f1f5f9',
                           transition: 'background-color 0.15s ease',
                           '&:hover': { backgroundColor: '#f1f5f9' },
                         }}
@@ -440,15 +440,15 @@ function CreateSaleDialog({ open, onClose, onSaleSaved, initialSale = null }) {
                             sx={{
                               px: 1.25,
                               py: 0.3,
-                              borderRadius: '10px',
-                              backgroundColor: '#fef3c7',
-                              color: '#b45309',
-                              border: '1px solid #fde68a',
+                              borderRadius: '8px',
+                              backgroundColor: '#eff6ff',
+                              color: '#2563eb',
                               fontSize: '0.72rem',
                               fontWeight: 700,
+                              border: '1px solid #bfdbfe',
                             }}
                           >
-                            {patient.ward_number}
+                            Ward: {patient.ward_number}
                           </Box>
                         )}
                       </Box>
@@ -457,26 +457,24 @@ function CreateSaleDialog({ open, onClose, onSaleSaved, initialSale = null }) {
                 )}
               </Box>
 
-              <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', sm: '1fr 1fr' }, gap: 1.5 }}>
                 <TextField
                   fullWidth
                   size="small"
                   id="customer-phone"
-                  label="Mobile Number (Optional)"
+                  label="Phone (Optional)"
                   placeholder="e.g. 9876543210"
                   value={customerPhone}
                   onChange={(e) => setCustomerPhone(e.target.value)}
                   disabled={submitting}
                 />
-              </Box>
 
-              <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
                 <TextField
                   fullWidth
                   size="small"
                   id="ward-number"
-                  label="Ward / Bed / Room No."
-                  placeholder="e.g. Ward 4B - Bed 12"
+                  label="Ward / Bed No."
+                  placeholder="e.g. Ward 4B"
                   value={wardNumber}
                   onChange={(e) => setWardNumber(e.target.value)}
                   disabled={submitting}
@@ -484,55 +482,95 @@ function CreateSaleDialog({ open, onClose, onSaleSaved, initialSale = null }) {
               </Box>
             </Box>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
-              <Typography sx={{ fontWeight: 600, color: '#0f172a', fontSize: '0.85rem' }}>
-                Meal Session:
-              </Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
-                {MEAL_TYPES.map((type) => {
-                  const isSelected = mealType === type
-                  return (
-                    <Box
-                      key={type}
-                      onClick={() => !submitting && setMealType(type)}
-                      sx={{
-                        px: 2,
-                        py: 0.6,
-                        borderRadius: '10px',
-                        cursor: submitting ? 'not-allowed' : 'pointer',
-                        border: isSelected ? '1.5px solid #0f172a' : '1.5px solid #e2e8f0',
-                        backgroundColor: isSelected ? '#0f172a' : '#f8fafc',
-                        color: isSelected ? '#ffffff' : '#334155',
-                        fontWeight: isSelected ? 700 : 500,
-                        fontSize: '0.825rem',
-                        transition: 'all 0.15s ease',
-                        '&:hover': {
-                          backgroundColor: isSelected ? '#0f172a' : '#ffffff',
-                          borderColor: isSelected ? '#0f172a' : '#cbd5e1',
-                        },
-                      }}
-                    >
-                      {type}
-                    </Box>
-                  )
-                })}
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
+                <Typography sx={{ fontWeight: 700, color: '#475569', fontSize: '0.78rem', textTransform: 'uppercase' }}>
+                  Meal Session
+                </Typography>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+                  {MEAL_TYPES.map((type) => {
+                    const isSelected = mealType === type
+                    return (
+                      <Box
+                        key={type}
+                        onClick={() => !submitting && setMealType(type)}
+                        sx={{
+                          px: 1.75,
+                          py: 0.5,
+                          borderRadius: '10px',
+                          cursor: submitting ? 'not-allowed' : 'pointer',
+                          border: isSelected ? '1.5px solid #0f172a' : '1px solid #e2e8f0',
+                          backgroundColor: isSelected ? '#0f172a' : '#f8fafc',
+                          color: isSelected ? '#ffffff' : '#334155',
+                          fontWeight: isSelected ? 700 : 500,
+                          fontSize: '0.8rem',
+                          transition: 'all 0.15s ease',
+                          '&:hover': {
+                            backgroundColor: isSelected ? '#0f172a' : '#ffffff',
+                          },
+                        }}
+                      >
+                        {type}
+                      </Box>
+                    )
+                  })}
+                </Box>
+              </Box>
+
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
+                <Typography sx={{ fontWeight: 700, color: '#475569', fontSize: '0.78rem', textTransform: 'uppercase' }}>
+                  Payment Status
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 0.75 }}>
+                  {['Paid', 'Unpaid'].map((st) => {
+                    const isSelected = paymentStatus === st
+                    const isPaid = st === 'Paid'
+                    return (
+                      <Box
+                        key={st}
+                        onClick={() => !submitting && setPaymentStatus(st)}
+                        sx={{
+                          px: 2,
+                          py: 0.5,
+                          borderRadius: '10px',
+                          cursor: submitting ? 'not-allowed' : 'pointer',
+                          border: isSelected
+                            ? `1.5px solid ${isPaid ? '#15803d' : '#b45309'}`
+                            : '1px solid #e2e8f0',
+                          backgroundColor: isSelected
+                            ? (isPaid ? '#dcfce7' : '#fef3c7')
+                            : '#f8fafc',
+                          color: isSelected
+                            ? (isPaid ? '#15803d' : '#b45309')
+                            : '#64748b',
+                          fontWeight: 800,
+                          fontSize: '0.8rem',
+                          textTransform: 'uppercase',
+                          transition: 'all 0.15s ease',
+                        }}
+                      >
+                        {st}
+                      </Box>
+                    )
+                  })}
+                </Box>
               </Box>
             </Box>
 
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25, flex: 1, minHeight: 0 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Typography sx={{ fontWeight: 700, color: '#0f172a', fontSize: '0.925rem' }}>
+                  <Typography sx={{ fontWeight: 800, color: '#0f172a', fontSize: '0.9rem', textTransform: 'uppercase' }}>
                     Order Items ({validRows.length})
                   </Typography>
                   <Box
                     sx={{
                       px: 1.25,
                       py: 0.2,
-                      borderRadius: '10px',
+                      borderRadius: '8px',
                       backgroundColor: '#e2e8f0',
                       fontSize: '0.75rem',
-                      fontWeight: 600,
+                      fontWeight: 700,
                       color: '#334155',
                     }}
                   >
@@ -547,10 +585,10 @@ function CreateSaleDialog({ open, onClose, onSaleSaved, initialSale = null }) {
                   startIcon={<AddOutlinedIcon sx={{ fontSize: 16 }} />}
                   sx={{
                     borderRadius: '8px',
-                    fontSize: '0.8rem',
-                    fontWeight: 600,
-                    py: 0.4,
-                    px: 1.5,
+                    fontSize: '0.78rem',
+                    fontWeight: 700,
+                    py: 0.35,
+                    px: 1.25,
                     backgroundColor: '#f1f5f9',
                     color: '#0f172a',
                     '&:hover': { backgroundColor: '#e2e8f0' },
@@ -560,21 +598,7 @@ function CreateSaleDialog({ open, onClose, onSaleSaved, initialSale = null }) {
                 </Button>
               </Box>
 
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 1.2,
-                  maxHeight: { xs: '260px', sm: '320px' },
-                  overflowY: 'auto',
-                  pr: 0.75,
-                  pb: 2,
-                  '&::-webkit-scrollbar': { width: '6px' },
-                  '&::-webkit-scrollbar-track': { background: '#f1f5f9', borderRadius: '8px' },
-                  '&::-webkit-scrollbar-thumb': { background: '#cbd5e1', borderRadius: '8px' },
-                  '&::-webkit-scrollbar-thumb:hover': { background: '#94a3b8' },
-                }}
-              >
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
                 {rows.map((row, index) => {
                   const query = row.item_name.toLowerCase().trim()
                   const recommendations = query
@@ -590,15 +614,13 @@ function CreateSaleDialog({ open, onClose, onSaleSaved, initialSale = null }) {
                     <Box
                       key={row.id}
                       sx={{
-                        display: 'grid',
-                        gridTemplateColumns: { xs: '1fr', sm: '2.5fr 1fr 1.2fr 0.8fr 36px' },
-                        gap: 1.25,
-                        alignItems: 'center',
-                        p: 1.25,
+                        p: 1.5,
                         borderRadius: '14px',
                         backgroundColor: '#f8fafc',
                         border: '1px solid #e2e8f0',
-                        position: 'relative',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 1.25,
                       }}
                     >
                       <Box sx={{ position: 'relative' }}>
@@ -623,7 +645,7 @@ function CreateSaleDialog({ open, onClose, onSaleSaved, initialSale = null }) {
                               zIndex: 100,
                               mt: 0.5,
                               backgroundColor: '#ffffff',
-                              borderRadius: '14px',
+                              borderRadius: '12px',
                               boxShadow: '0 12px 30px rgba(15, 23, 42, 0.16)',
                               border: '1px solid #cbd5e1',
                               overflow: 'hidden',
@@ -635,26 +657,23 @@ function CreateSaleDialog({ open, onClose, onSaleSaved, initialSale = null }) {
                                 onMouseDown={() => handleSelectItem(index, item)}
                                 sx={{
                                   p: 1.25,
-                                  px: 1.75,
+                                  px: 1.5,
                                   display: 'flex',
                                   justifyContent: 'space-between',
                                   alignItems: 'center',
                                   cursor: 'pointer',
-                                  transition: 'background-color 0.15s ease',
-                                  '&:hover': {
-                                    backgroundColor: '#f1f5f9',
-                                  },
+                                  '&:hover': { backgroundColor: '#f1f5f9' },
                                 }}
                               >
                                 <Box>
-                                  <Typography sx={{ fontWeight: 600, color: '#0f172a', fontSize: '0.875rem' }}>
+                                  <Typography sx={{ fontWeight: 700, color: '#0f172a', fontSize: '0.85rem' }}>
                                     {item.name}
                                   </Typography>
-                                  <Typography sx={{ fontSize: '0.75rem', color: '#64748b' }}>
+                                  <Typography sx={{ fontSize: '0.72rem', color: '#64748b' }}>
                                     {item.category || 'General'}
                                   </Typography>
                                 </Box>
-                                <Typography sx={{ fontWeight: 700, color: '#0f172a', fontSize: '0.9rem' }}>
+                                <Typography sx={{ fontWeight: 800, color: '#0f172a', fontSize: '0.875rem' }}>
                                   ₹{Number(item.price).toFixed(2)}
                                 </Typography>
                               </Box>
@@ -663,127 +682,131 @@ function CreateSaleDialog({ open, onClose, onSaleSaved, initialSale = null }) {
                         )}
                       </Box>
 
-                      <TextField
-                        size="small"
-                        label="Price"
-                        type="number"
-                        value={row.unit_price}
-                        onChange={(e) => handlePriceChange(index, e.target.value)}
-                        disabled={submitting}
-                        InputProps={{
-                          startAdornment: <InputAdornment position="start">₹</InputAdornment>,
-                        }}
-                      />
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1.5 }}>
+                        <Box sx={{ width: 95 }}>
+                          <TextField
+                            size="small"
+                            type="number"
+                            value={row.unit_price}
+                            onChange={(e) => handlePriceChange(index, e.target.value)}
+                            disabled={submitting}
+                            InputProps={{
+                              startAdornment: <InputAdornment position="start">₹</InputAdornment>,
+                              sx: { fontSize: '0.85rem' },
+                            }}
+                          />
+                        </Box>
 
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
-                        <IconButton
-                          size="small"
-                          onClick={() => handleQuantityChange(index, -1)}
-                          disabled={submitting || row.quantity <= 1}
-                          sx={{ color: '#64748b', p: 0.5 }}
-                        >
-                          <RemoveCircleOutlinedIcon sx={{ fontSize: 20 }} />
-                        </IconButton>
-                        <Typography sx={{ fontWeight: 700, color: '#0f172a', minWidth: 24, textAlign: 'center' }}>
-                          {row.quantity}
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, backgroundColor: '#ffffff', borderRadius: '10px', p: 0.25, border: '1px solid #e2e8f0' }}>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleQuantityChange(index, -1)}
+                            disabled={submitting || row.quantity <= 1}
+                            sx={{ color: '#64748b', p: 0.5 }}
+                          >
+                            <RemoveCircleOutlinedIcon sx={{ fontSize: 18 }} />
+                          </IconButton>
+                          <Typography sx={{ fontWeight: 800, color: '#0f172a', minWidth: 20, textAlign: 'center', fontSize: '0.85rem' }}>
+                            {row.quantity}
+                          </Typography>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleQuantityChange(index, 1)}
+                            disabled={submitting}
+                            sx={{ color: '#0f172a', p: 0.5 }}
+                          >
+                            <AddCircleOutlinedIcon sx={{ fontSize: 18 }} />
+                          </IconButton>
+                        </Box>
+
+                        <Typography sx={{ fontWeight: 800, color: '#0f172a', fontSize: '0.95rem', ml: 'auto' }}>
+                          ₹{rowSubtotal.toFixed(2)}
                         </Typography>
+
                         <IconButton
                           size="small"
-                          onClick={() => handleQuantityChange(index, 1)}
-                          disabled={submitting}
-                          sx={{ color: '#0f172a', p: 0.5 }}
+                          onClick={() => handleRemoveRow(index)}
+                          disabled={submitting || rows.length === 1}
+                          sx={{
+                            color: '#94a3b8',
+                            p: 0.5,
+                            '&:hover': { color: '#ef4444' },
+                          }}
                         >
-                          <AddCircleOutlinedIcon sx={{ fontSize: 20 }} />
+                          <DeleteOutlinedIcon sx={{ fontSize: 18 }} />
                         </IconButton>
                       </Box>
-
-                      <Typography sx={{ fontWeight: 700, color: '#0f172a', textAlign: 'right', fontSize: '0.95rem' }}>
-                        ₹{rowSubtotal.toFixed(2)}
-                      </Typography>
-
-                      <IconButton
-                        size="small"
-                        onClick={() => handleRemoveRow(index)}
-                        disabled={submitting || rows.length === 1}
-                        sx={{
-                          color: '#94a3b8',
-                          p: 0.5,
-                          '&:hover': { color: '#ef4444' },
-                        }}
-                      >
-                        <DeleteOutlinedIcon sx={{ fontSize: 18 }} />
-                      </IconButton>
                     </Box>
                   )
                 })}
               </Box>
             </Box>
+          </DialogContent>
 
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                p: 2,
-                borderRadius: '16px',
-                backgroundColor: '#f1f5f9',
-                border: '1px solid #e2e8f0',
-                mt: 'auto',
-              }}
-            >
+          <Box
+            sx={{
+              p: { xs: 2, sm: 2.5 },
+              borderTop: '1px solid #e2e8f0',
+              backgroundColor: '#ffffff',
+              flexShrink: 0,
+            }}
+          >
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
               <Box>
-                <Typography variant="body2" sx={{ color: '#64748b', fontSize: '0.85rem' }}>
+                <Typography sx={{ fontSize: '0.78rem', color: '#64748b' }}>
                   Total Items: <strong>{validRows.reduce((sum, r) => sum + r.quantity, 0)}</strong>
                 </Typography>
-                <Typography variant="caption" sx={{ color: '#94a3b8' }}>
-                  All taxes and hospital discounts included
+                <Typography sx={{ fontSize: '0.72rem', color: '#94a3b8' }}>
+                  All taxes and canteen charges included
                 </Typography>
               </Box>
-
               <Box sx={{ textAlign: 'right' }}>
-                <Typography sx={{ fontSize: '0.78rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                <Typography sx={{ fontSize: '0.72rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 700 }}>
                   Grand Total
                 </Typography>
-                <Typography sx={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', lineHeight: 1.1 }}>
+                <Typography sx={{ fontSize: { xs: '1.4rem', sm: '1.65rem' }, fontWeight: 800, color: '#0f172a', lineHeight: 1.1 }}>
                   ₹{grandTotal.toFixed(2)}
                 </Typography>
               </Box>
             </Box>
-          </DialogContent>
 
-          <DialogActions sx={{ px: 2, pt: 1, pb: 1, gap: 1, borderTop: '1px solid #f1f5f9' }}>
-            <Button
-              onClick={handleClose}
-              disabled={submitting}
-              variant="outlined"
-              sx={{
-                borderRadius: '12px',
-                color: '#475569',
-                borderColor: '#cbd5e1',
-                px: 2.5,
-                '&:hover': { borderColor: '#94a3b8', backgroundColor: '#f8fafc' },
-              }}
-            >
-              Cancel
-            </Button>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1.5 }}>
+              <Button
+                onClick={handleClose}
+                disabled={submitting}
+                variant="outlined"
+                sx={{
+                  borderRadius: '12px',
+                  color: '#475569',
+                  borderColor: '#cbd5e1',
+                  px: 2.5,
+                  py: 1,
+                  fontSize: '0.85rem',
+                  '&:hover': { borderColor: '#94a3b8', backgroundColor: '#f8fafc' },
+                }}
+              >
+                Cancel
+              </Button>
 
-            <Button
-              type="submit"
-              disabled={submitting || validRows.length === 0}
-              variant="contained"
-              sx={{
-                borderRadius: '12px',
-                backgroundColor: '#0f172a',
-                color: '#ffffff',
-                px: 3.5,
-                py: 1.1,
-                boxShadow: '0 4px 12px rgba(15, 23, 42, 0.18)',
-                '&:hover': { backgroundColor: '#1e293b' },
-              }}
-            >
-              {submitting ? <CircularProgress size={20} sx={{ color: '#ffffff' }} /> : (isEditing ? 'Update Sale' : 'Complete & Save Sale')}
-            </Button>
-          </DialogActions>
+              <Button
+                type="submit"
+                disabled={submitting || validRows.length === 0}
+                variant="contained"
+                sx={{
+                  borderRadius: '12px',
+                  backgroundColor: '#0f172a',
+                  color: '#ffffff',
+                  px: 3.5,
+                  py: 1,
+                  fontSize: '0.85rem',
+                  boxShadow: '0 4px 12px rgba(15, 23, 42, 0.18)',
+                  '&:hover': { backgroundColor: '#1e293b' },
+                }}
+              >
+                {submitting ? <CircularProgress size={18} sx={{ color: '#ffffff' }} /> : (isEditing ? 'Update Sale' : 'Complete & Save Sale')}
+              </Button>
+            </Box>
+          </Box>
         </Box>
       </Dialog>
 

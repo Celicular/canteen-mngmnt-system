@@ -37,6 +37,7 @@ CREATE TABLE IF NOT EXISTS sales (
     patient_id INTEGER,
     meal_type TEXT NOT NULL,
     total_amount REAL NOT NULL,
+    payment_status TEXT DEFAULT 'Paid',
     created_by TEXT NOT NULL,
     created_at TEXT NOT NULL,
     updated_at TEXT,

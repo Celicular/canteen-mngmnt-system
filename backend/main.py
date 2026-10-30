@@ -118,7 +118,11 @@ class CreateSaleRequest(BaseModel):
     ward_number: Optional[str] = ""
     patient_id: Optional[int] = None
     meal_type: str = "Snack"
+    payment_status: Optional[str] = "Paid"
     items: List[SaleItemPayload]
+
+class UpdatePaymentStatusRequest(BaseModel):
+    payment_status: str
 
 class StockExpenseRequest(BaseModel):
     date: Optional[str] = None
@@ -444,6 +448,8 @@ def get_sales(
     all_dates: bool = False,
     meal_type: Optional[str] = None,
     cashier: Optional[str] = None,
+    patient_id: Optional[int] = None,
+    payment_status: Optional[str] = None,
 ):
     authenticate_request(request)
 
@@ -458,7 +464,7 @@ def get_sales(
     """
     params = []
 
-    if all_dates:
+    if all_dates or (patient_id and not (start_date or end_date or date)):
         pass
     elif start_date and end_date:
         query += " AND s.created_at >= ? AND s.created_at <= ?"
@@ -484,6 +490,14 @@ def get_sales(
     if cashier and cashier != "All":
         query += " AND s.created_by = ?"
         params.append(cashier)
+
+    if patient_id:
+        query += " AND s.patient_id = ?"
+        params.append(patient_id)
+
+    if payment_status and payment_status != "All":
+        query += " AND s.payment_status = ?"
+        params.append(payment_status)
 
     query += " ORDER BY s.id DESC"
 
@@ -684,14 +698,17 @@ def create_sale(req: CreateSaleRequest, request: Request):
     ward_number = req.ward_number.strip() if req.ward_number else ""
     patient_id = req.patient_id
     meal_type = req.meal_type if req.meal_type in ALLOWED_MEAL_TYPES else "Snack"
+    payment_status = req.payment_status.strip().title() if req.payment_status else "Paid"
+    if payment_status not in ["Paid", "Unpaid"]:
+        payment_status = "Paid"
 
     conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
-    INSERT INTO sales (receipt_no, customer_name, customer_phone, ward_number, patient_id, meal_type, total_amount, created_by, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (receipt_no, customer_name, customer_phone, ward_number, patient_id, meal_type, total_amount, current_user["username"], now_iso))
+    INSERT INTO sales (receipt_no, customer_name, customer_phone, ward_number, patient_id, meal_type, total_amount, payment_status, created_by, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (receipt_no, customer_name, customer_phone, ward_number, patient_id, meal_type, total_amount, payment_status, current_user["username"], now_iso))
     sale_id = cursor.lastrowid
 
     for item in valid_items:
@@ -745,12 +762,15 @@ def update_sale(sale_id: int, req: CreateSaleRequest, request: Request):
     ward_number = req.ward_number.strip() if req.ward_number else ""
     patient_id = req.patient_id
     meal_type = req.meal_type if req.meal_type in ALLOWED_MEAL_TYPES else "Snack"
+    payment_status = req.payment_status.strip().title() if req.payment_status else "Paid"
+    if payment_status not in ["Paid", "Unpaid"]:
+        payment_status = "Paid"
 
     cursor.execute("""
     UPDATE sales
-    SET customer_name = ?, customer_phone = ?, ward_number = ?, patient_id = ?, meal_type = ?, total_amount = ?, updated_at = ?
+    SET customer_name = ?, customer_phone = ?, ward_number = ?, patient_id = ?, meal_type = ?, total_amount = ?, payment_status = ?, updated_at = ?
     WHERE id = ?
-    """, (customer_name, customer_phone, ward_number, patient_id, meal_type, total_amount, now_iso, sale_id))
+    """, (customer_name, customer_phone, ward_number, patient_id, meal_type, total_amount, payment_status, now_iso, sale_id))
 
     cursor.execute("DELETE FROM sale_items WHERE sale_id = ?", (sale_id,))
 
@@ -773,6 +793,117 @@ def update_sale(sale_id: int, req: CreateSaleRequest, request: Request):
 
     cursor.execute("SELECT * FROM sale_items WHERE sale_id = ? ORDER BY id ASC", (sale_id,))
     sale_row["items"] = [dict(r) for r in cursor.fetchall()]
+
+    conn.close()
+    return sale_row
+
+@app.patch("/api/sales/{sale_id}/payment-status")
+def update_sale_payment_status(sale_id: int, req: UpdatePaymentStatusRequest, request: Request):
+    authenticate_request(request)
+
+    status_val = req.payment_status.strip().title()
+    if status_val not in ["Paid", "Unpaid"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Payment status must be either Paid or Unpaid",
+        )
+
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT id FROM sales WHERE id = ?", (sale_id,))
+    if not cursor.fetchone():
+        conn.close()
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Sale record not found",
+        )
+
+    now_iso = datetime.now(timezone.utc).isoformat()
+    cursor.execute("UPDATE sales SET payment_status = ?, updated_at = ? WHERE id = ?", (status_val, now_iso, sale_id))
+    conn.commit()
+
+    cursor.execute("""
+    SELECT s.*, u.full_name as creator_name, u.avatar as creator_avatar, u.user_type as creator_role
+    FROM sales s
+    LEFT JOIN users u ON s.created_by = u.username
+    WHERE s.id = ?
+    """, (sale_id,))
+    sale_row = dict(cursor.fetchone())
+
+    cursor.execute("SELECT * FROM sale_items WHERE sale_id = ? ORDER BY id ASC", (sale_id,))
+    sale_row["items"] = [dict(r) for r in cursor.fetchall()]
+
+    conn.close()
+    return sale_row
+
+@app.get("/api/invoices/patient/{patient_id}")
+def get_patient_invoice(patient_id: int, request: Request):
+    authenticate_request(request)
+
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM patients WHERE id = ?", (patient_id,))
+    patient = cursor.fetchone()
+    if not patient:
+        conn.close()
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Patient not found",
+        )
+    patient_dict = dict(patient)
+
+    cursor.execute("""
+    SELECT s.*, u.full_name as creator_name, u.avatar as creator_avatar, u.user_type as creator_role
+    FROM sales s
+    LEFT JOIN users u ON s.created_by = u.username
+    WHERE s.patient_id = ?
+    ORDER BY s.id DESC
+    """, (patient_id,))
+    sales_rows = cursor.fetchall()
+    sales_list = []
+    total_amount = 0.0
+    paid_amount = 0.0
+    unpaid_amount = 0.0
+
+    consolidated_items_map = {}
+
+    for s in sales_rows:
+        s_dict = dict(s)
+        cursor.execute("SELECT * FROM sale_items WHERE sale_id = ? ORDER BY id ASC", (s["id"],))
+        items = [dict(r) for r in cursor.fetchall()]
+        s_dict["items"] = items
+        sales_list.append(s_dict)
+
+        amt = float(s["total_amount"])
+        total_amount += amt
+        p_status = s["payment_status"] or "Paid"
+        if p_status == "Paid":
+            paid_amount += amt
+        else:
+            unpaid_amount += amt
+
+        for it in items:
+            key = it["item_name"].strip()
+            if key not in consolidated_items_map:
+                consolidated_items_map[key] = {
+                    "item_name": key,
+                    "quantity": 0,
+                    "unit_price": it["unit_price"],
+                    "total_amount": 0.0,
+                }
+            consolidated_items_map[key]["quantity"] += it["quantity"]
+            consolidated_items_map[key]["total_amount"] += it["subtotal"]
+
+    conn.close()
+
+    return {
+        "patient": patient_dict,
+        "sales": sales_list,
+        "total_amount": total_amount,
+        "paid_amount": paid_amount,
+        "unpaid_amount": unpaid_amount,
+        "consolidated_items": list(consolidated_items_map.values()),
+    }
 
     conn.close()
     return sale_row

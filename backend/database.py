@@ -51,6 +51,7 @@ def init_db():
         customer_phone TEXT DEFAULT '',
         meal_type TEXT NOT NULL,
         total_amount REAL NOT NULL,
+        payment_status TEXT DEFAULT 'Paid',
         created_by TEXT NOT NULL,
         created_at TEXT NOT NULL,
         updated_at TEXT,
@@ -105,6 +106,11 @@ def init_db():
 
     try:
         cursor.execute("ALTER TABLE sales ADD COLUMN patient_id INTEGER;")
+    except Exception:
+        pass
+
+    try:
+        cursor.execute("ALTER TABLE sales ADD COLUMN payment_status TEXT DEFAULT 'Paid';")
     except Exception:
         pass
 

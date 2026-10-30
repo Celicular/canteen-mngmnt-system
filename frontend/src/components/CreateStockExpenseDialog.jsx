@@ -3,7 +3,6 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions,
   TextField,
   Button,
   Box,
@@ -129,10 +128,18 @@ function CreateStockExpenseDialog({ open, onClose, onExpenseSaved, initialExpens
       fullWidth
       PaperProps={{
         sx: {
-          borderRadius: '24px',
-          p: { xs: 2, sm: 2.5 },
+          borderRadius: { xs: '20px', sm: '24px' },
+          p: 0,
           backgroundColor: '#ffffff',
           boxShadow: '0 25px 60px -15px rgba(15, 23, 42, 0.25)',
+          maxWidth: '560px !important',
+          width: { xs: 'calc(100% - 16px)', sm: '100%' },
+          maxHeight: { xs: '94vh', sm: '90vh' },
+          height: { xs: 'auto', sm: 'auto' },
+          m: { xs: '8px auto', sm: '32px auto' },
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
         },
       }}
     >
@@ -141,9 +148,9 @@ function CreateStockExpenseDialog({ open, onClose, onExpenseSaved, initialExpens
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          pb: 1,
-          pt: 0.5,
-          px: 1,
+          p: { xs: 2, sm: 2.5 },
+          borderBottom: '1px solid #f1f5f9',
+          flexShrink: 0,
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
@@ -162,11 +169,11 @@ function CreateStockExpenseDialog({ open, onClose, onExpenseSaved, initialExpens
             <Inventory2OutlinedIcon sx={{ fontSize: 20 }} />
           </Box>
           <Box>
-            <Typography variant="h6" sx={{ fontWeight: 700, color: '#0f172a', fontSize: '1.15rem' }}>
+            <Typography variant="h6" sx={{ fontWeight: 800, color: '#0f172a', fontSize: { xs: '1.05rem', sm: '1.15rem' } }}>
               {isEditing ? 'Edit Stock Expenditure' : 'Record Stock Expenditure'}
             </Typography>
             <Typography variant="caption" sx={{ color: '#64748b' }}>
-              Raw materials, ingredients, and canteen supplies purchase
+              Raw materials, ingredients & canteen supplies
             </Typography>
           </Box>
         </Box>
@@ -176,8 +183,29 @@ function CreateStockExpenseDialog({ open, onClose, onExpenseSaved, initialExpens
         </IconButton>
       </DialogTitle>
 
-      <form onSubmit={handleSubmit}>
-        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2.25, px: 1, py: 1.5 }}>
+      <Box
+        component="form"
+        onSubmit={handleSubmit}
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          flex: 1,
+          minHeight: 0,
+          overflow: 'hidden',
+        }}
+      >
+        <DialogContent
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2,
+            p: { xs: 2, sm: 2.5 },
+            flex: 1,
+            minHeight: 0,
+            overflowY: 'auto',
+            WebkitOverflowScrolling: 'touch',
+          }}
+        >
           {error && (
             <Alert severity="error" sx={{ borderRadius: '12px', fontSize: '0.85rem' }}>
               {error}
@@ -198,7 +226,6 @@ function CreateStockExpenseDialog({ open, onClose, onExpenseSaved, initialExpens
             <TextField
               size="small"
               required
-              autoFocus
               label="Stock / Ingredient Name"
               placeholder="e.g. Milk, Onions, Cooking Oil, Rice"
               value={itemName}
@@ -208,7 +235,7 @@ function CreateStockExpenseDialog({ open, onClose, onExpenseSaved, initialExpens
           </Box>
 
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
-            <Typography sx={{ fontWeight: 600, color: '#0f172a', fontSize: '0.825rem' }}>
+            <Typography sx={{ fontWeight: 700, color: '#475569', fontSize: '0.78rem', textTransform: 'uppercase' }}>
               Category
             </Typography>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
@@ -219,8 +246,8 @@ function CreateStockExpenseDialog({ open, onClose, onExpenseSaved, initialExpens
                     key={cat}
                     onClick={() => !submitting && setCategory(cat)}
                     sx={{
-                      px: 2,
-                      py: 0.55,
+                      px: 1.75,
+                      py: 0.5,
                       borderRadius: '10px',
                       cursor: submitting ? 'not-allowed' : 'pointer',
                       border: isSelected ? '1.5px solid #0f172a' : '1px solid #e2e8f0',
@@ -231,7 +258,6 @@ function CreateStockExpenseDialog({ open, onClose, onExpenseSaved, initialExpens
                       transition: 'all 0.15s ease',
                       '&:hover': {
                         backgroundColor: isSelected ? '#0f172a' : '#ffffff',
-                        borderColor: isSelected ? '#0f172a' : '#cbd5e1',
                       },
                     }}
                   >
@@ -242,7 +268,7 @@ function CreateStockExpenseDialog({ open, onClose, onExpenseSaved, initialExpens
             </Box>
           </Box>
 
-          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1.2fr 1.5fr 1.5fr' }, gap: 1.5, alignItems: 'center' }}>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr 1fr', sm: '1fr 1fr' }, gap: 1.5 }}>
             <TextField
               size="small"
               required
@@ -255,8 +281,8 @@ function CreateStockExpenseDialog({ open, onClose, onExpenseSaved, initialExpens
             />
 
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-              <Typography sx={{ fontWeight: 600, color: '#64748b', fontSize: '0.75rem' }}>
-                Unit of Measure
+              <Typography sx={{ fontWeight: 600, color: '#64748b', fontSize: '0.72rem', textTransform: 'uppercase' }}>
+                Unit
               </Typography>
               <Box sx={{ display: 'flex', gap: 0.5 }}>
                 {UNITS.map((u) => {
@@ -266,15 +292,15 @@ function CreateStockExpenseDialog({ open, onClose, onExpenseSaved, initialExpens
                       key={u}
                       onClick={() => !submitting && setUnit(u)}
                       sx={{
-                        px: 1.25,
-                        py: 0.5,
+                        px: 1,
+                        py: 0.45,
                         borderRadius: '8px',
                         cursor: submitting ? 'not-allowed' : 'pointer',
                         border: isSelected ? '1.5px solid #0f172a' : '1px solid #e2e8f0',
                         backgroundColor: isSelected ? '#0f172a' : '#f8fafc',
                         color: isSelected ? '#ffffff' : '#334155',
-                        fontWeight: isSelected ? 700 : 600,
-                        fontSize: '0.78rem',
+                        fontWeight: 700,
+                        fontSize: '0.75rem',
                         textAlign: 'center',
                         flex: 1,
                         transition: 'all 0.12s ease',
@@ -286,21 +312,21 @@ function CreateStockExpenseDialog({ open, onClose, onExpenseSaved, initialExpens
                 })}
               </Box>
             </Box>
-
-            <TextField
-              size="small"
-              required
-              type="number"
-              label={`Rate per ${unit}`}
-              value={unitPrice}
-              onChange={(e) => setUnitPrice(e.target.value)}
-              disabled={submitting}
-              inputProps={{ min: 0, step: 'any' }}
-              InputProps={{
-                startAdornment: <InputAdornment position="start">₹</InputAdornment>,
-              }}
-            />
           </Box>
+
+          <TextField
+            size="small"
+            required
+            type="number"
+            label={`Rate per ${unit}`}
+            value={unitPrice}
+            onChange={(e) => setUnitPrice(e.target.value)}
+            disabled={submitting}
+            inputProps={{ min: 0, step: 'any' }}
+            InputProps={{
+              startAdornment: <InputAdornment position="start">₹</InputAdornment>,
+            }}
+          />
 
           <TextField
             size="small"
@@ -324,8 +350,8 @@ function CreateStockExpenseDialog({ open, onClose, onExpenseSaved, initialExpens
             }}
           >
             <Box>
-              <Typography variant="body2" sx={{ color: '#64748b', fontSize: '0.85rem' }}>
-                Total Expenditure Calculation
+              <Typography variant="body2" sx={{ color: '#64748b', fontSize: '0.825rem' }}>
+                Total Expenditure
               </Typography>
               <Typography variant="caption" sx={{ color: '#94a3b8' }}>
                 {quantity} {unit} &times; ₹{unitPrice}/{unit}
@@ -333,17 +359,27 @@ function CreateStockExpenseDialog({ open, onClose, onExpenseSaved, initialExpens
             </Box>
 
             <Box sx={{ textAlign: 'right' }}>
-              <Typography sx={{ fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                Total Expense
+              <Typography sx={{ fontSize: '0.72rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                Calculated Total
               </Typography>
-              <Typography sx={{ fontSize: '1.5rem', fontWeight: 800, color: '#0f172a', lineHeight: 1.1 }}>
+              <Typography sx={{ fontSize: '1.45rem', fontWeight: 800, color: '#0f172a', lineHeight: 1.1 }}>
                 ₹{totalCost.toFixed(2)}
               </Typography>
             </Box>
           </Box>
         </DialogContent>
 
-        <DialogActions sx={{ px: 1, pt: 1, pb: 0.5, gap: 1 }}>
+        <Box
+          sx={{
+            p: { xs: 2, sm: 2.5 },
+            borderTop: '1px solid #e2e8f0',
+            backgroundColor: '#ffffff',
+            display: 'flex',
+            justifyContent: 'flex-end',
+            gap: 1.5,
+            flexShrink: 0,
+          }}
+        >
           <Button
             onClick={handleClose}
             disabled={submitting}
@@ -353,6 +389,8 @@ function CreateStockExpenseDialog({ open, onClose, onExpenseSaved, initialExpens
               color: '#475569',
               borderColor: '#cbd5e1',
               px: 2.5,
+              py: 0.9,
+              fontSize: '0.85rem',
               '&:hover': { borderColor: '#94a3b8', backgroundColor: '#f8fafc' },
             }}
           >
@@ -368,15 +406,16 @@ function CreateStockExpenseDialog({ open, onClose, onExpenseSaved, initialExpens
               backgroundColor: '#0f172a',
               color: '#ffffff',
               px: 3.5,
-              py: 1,
+              py: 0.9,
+              fontSize: '0.85rem',
               boxShadow: '0 4px 12px rgba(15, 23, 42, 0.18)',
               '&:hover': { backgroundColor: '#1e293b' },
             }}
           >
             {submitting ? <CircularProgress size={18} sx={{ color: '#ffffff' }} /> : (isEditing ? 'Update Entry' : 'Save Expenditure')}
           </Button>
-        </DialogActions>
-      </form>
+        </Box>
+      </Box>
     </Dialog>
   )
 }

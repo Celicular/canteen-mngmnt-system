@@ -30,10 +30,12 @@ import CalendarTodayOutlinedIcon from '@mui/icons-material/CalendarTodayOutlined
 import CurrencyRupeeIcon from '@mui/icons-material/CurrencyRupee'
 import ShoppingBagOutlinedIcon from '@mui/icons-material/ShoppingBagOutlined'
 import RestaurantOutlinedIcon from '@mui/icons-material/RestaurantOutlined'
+import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined'
 import CreateSaleDialog from '../components/CreateSaleDialog'
+import InvoiceDialog from '../components/InvoiceDialog'
 import AvatarBadge from '../components/AvatarBadge'
 import UserTypeChip from '../components/UserTypeChip'
-import { fetchSalesApi, fetchSalesSummaryApi, deleteSaleApi } from '../api/sales'
+import { fetchSalesApi, fetchSalesSummaryApi, deleteSaleApi, updateSalePaymentStatusApi } from '../api/sales'
 import { useAuth } from '../context/AuthContext'
 
 const MEAL_COLORS = {
@@ -96,6 +98,27 @@ function SalesPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingSale, setEditingSale] = useState(null)
   const [deletingId, setDeletingId] = useState(null)
+  const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false)
+  const [invoiceSale, setInvoiceSale] = useState(null)
+
+  const handleGenerateInvoice = (sale) => {
+    setInvoiceSale(sale)
+    setInvoiceDialogOpen(true)
+  }
+
+  const handleTogglePaymentStatus = async (sale) => {
+    try {
+      const nextStatus = (sale.payment_status || 'Paid') === 'Paid' ? 'Unpaid' : 'Paid'
+      const updated = await updateSalePaymentStatusApi(sale.id, nextStatus)
+      setSales((prev) => prev.map((s) => (s.id === sale.id ? updated : s)))
+    } catch (err) {
+      setError(err.message || 'Failed to update payment status')
+    }
+  }
+
+  const handleInvoiceStatusUpdated = (updatedSale) => {
+    setSales((prev) => prev.map((s) => (s.id === updatedSale.id ? updatedSale : s)))
+  }
 
   const loadData = async () => {
     try {
@@ -680,10 +703,11 @@ function SalesPage() {
                   <TableCell sx={{ fontWeight: 700, color: '#475569', fontSize: '0.825rem' }}>Session</TableCell>
                   <TableCell sx={{ fontWeight: 700, color: '#475569', fontSize: '0.825rem' }}>Items Summary</TableCell>
                   <TableCell sx={{ fontWeight: 700, color: '#475569', fontSize: '0.825rem' }}>Billed By</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 700, color: '#475569', fontSize: '0.825rem' }}>Status</TableCell>
                   <TableCell align="right" sx={{ fontWeight: 700, color: '#475569', fontSize: '0.825rem' }}>
                     Total (₹)
                   </TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 700, color: '#475569', fontSize: '0.825rem', width: 110 }}>
+                  <TableCell align="center" sx={{ fontWeight: 700, color: '#475569', fontSize: '0.825rem', width: 140 }}>
                     Actions
                   </TableCell>
                 </TableRow>
@@ -801,6 +825,32 @@ function SalesPage() {
                           </Box>
                         </TableCell>
 
+                        <TableCell align="center">
+                          <Tooltip title="Click to toggle Paid / Unpaid">
+                            <Box
+                              onClick={() => handleTogglePaymentStatus(sale)}
+                              sx={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                px: 1.25,
+                                py: 0.3,
+                                borderRadius: '9999px',
+                                fontSize: '0.72rem',
+                                fontWeight: 800,
+                                cursor: 'pointer',
+                                textTransform: 'uppercase',
+                                backgroundColor: (sale.payment_status || 'Paid') === 'Paid' ? '#dcfce7' : '#fef3c7',
+                                color: (sale.payment_status || 'Paid') === 'Paid' ? '#15803d' : '#b45309',
+                                border: `1px solid ${(sale.payment_status || 'Paid') === 'Paid' ? '#bbf7d0' : '#fde68a'}`,
+                                transition: 'all 0.15s ease',
+                                '&:hover': { opacity: 0.85, transform: 'scale(1.02)' },
+                              }}
+                            >
+                              {sale.payment_status || 'Paid'}
+                            </Box>
+                          </Tooltip>
+                        </TableCell>
+
                         <TableCell align="right">
                           <Typography sx={{ fontWeight: 800, color: '#0f172a', fontSize: '0.975rem' }}>
                             ₹{Number(sale.total_amount).toFixed(2)}
@@ -809,6 +859,20 @@ function SalesPage() {
 
                         <TableCell align="center">
                           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
+                            <Tooltip title="Generate Invoice">
+                              <IconButton
+                                size="small"
+                                onClick={() => handleGenerateInvoice(sale)}
+                                sx={{
+                                  color: '#0f172a',
+                                  backgroundColor: '#f1f5f9',
+                                  '&:hover': { backgroundColor: '#e2e8f0' },
+                                }}
+                              >
+                                <DescriptionOutlinedIcon sx={{ fontSize: 18 }} />
+                              </IconButton>
+                            </Tooltip>
+
                             <Tooltip title="Edit Sale">
                               <IconButton
                                 size="small"
@@ -863,7 +927,7 @@ function SalesPage() {
                       </TableRow>
 
                       <TableRow sx={{ backgroundColor: '#fbfcfd' }}>
-                        <TableCell colSpan={9} sx={{ p: 0, borderBottom: isExpanded ? '1px solid #e2e8f0' : 'none' }}>
+                        <TableCell colSpan={10} sx={{ p: 0, borderBottom: isExpanded ? '1px solid #e2e8f0' : 'none' }}>
                           <Collapse in={isExpanded} timeout="auto" unmountOnExit>
                             <Box sx={{ p: 2.5, px: 4, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                               <Typography sx={{ fontWeight: 700, color: '#0f172a', fontSize: '0.85rem' }}>
@@ -922,6 +986,13 @@ function SalesPage() {
         onClose={() => setDialogOpen(false)}
         onSaleSaved={handleSaleSaved}
         initialSale={editingSale}
+      />
+
+      <InvoiceDialog
+        open={invoiceDialogOpen}
+        onClose={() => setInvoiceDialogOpen(false)}
+        sale={invoiceSale}
+        onStatusUpdated={handleInvoiceStatusUpdated}
       />
     </Box>
   )
