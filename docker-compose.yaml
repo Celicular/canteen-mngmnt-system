@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
     container_name: canteen_backend
     ports:
-      - "8000:8000"
+      - "21396:8000"
     volumes:
       - sqlite_data:/app/data
     environment:

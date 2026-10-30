@@ -12,7 +12,9 @@ services:
       - sqlite_data:/app/data
     environment:
       - PYTHONUNBUFFERED=1
+      - DATA_DIR=/app/data
     restart: unless-stopped
 
 volumes:
   sqlite_data:
+    driver: local
