@@ -1,9 +1,9 @@
 import { API_BASE } from './config'
+import { apiFetch } from './client'
 
 export async function fetchItemsApi() {
-  const response = await fetch(`${API_BASE}/items`, {
+  const response = await apiFetch(`${API_BASE}/items`, {
     method: 'GET',
-    credentials: 'include',
   })
 
   if (!response.ok) {
@@ -15,12 +15,11 @@ export async function fetchItemsApi() {
 }
 
 export async function createItemApi({ name, description = '', price, category = 'General', is_available = true }) {
-  const response = await fetch(`${API_BASE}/items`, {
+  const response = await apiFetch(`${API_BASE}/items`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    credentials: 'include',
     body: JSON.stringify({
       name,
       description,
@@ -39,12 +38,11 @@ export async function createItemApi({ name, description = '', price, category = 
 }
 
 export async function updateItemApi(id, { name, description = '', price, category = 'General', is_available = true }) {
-  const response = await fetch(`${API_BASE}/items/${id}`, {
+  const response = await apiFetch(`${API_BASE}/items/${id}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
     },
-    credentials: 'include',
     body: JSON.stringify({
       name,
       description,
@@ -63,9 +61,8 @@ export async function updateItemApi(id, { name, description = '', price, categor
 }
 
 export async function deleteItemApi(id) {
-  const response = await fetch(`${API_BASE}/items/${id}`, {
+  const response = await apiFetch(`${API_BASE}/items/${id}`, {
     method: 'DELETE',
-    credentials: 'include',
   })
 
   if (!response.ok) {

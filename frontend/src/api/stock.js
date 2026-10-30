@@ -1,4 +1,5 @@
 import { API_BASE } from './config'
+import { apiFetch } from './client'
 
 export async function fetchStockExpensesApi({
   date,
@@ -22,9 +23,8 @@ export async function fetchStockExpensesApi({
   }
 
   const query = params.toString() ? `?${params.toString()}` : ''
-  const response = await fetch(`${API_BASE}/stock-expenses${query}`, {
+  const response = await apiFetch(`${API_BASE}/stock-expenses${query}`, {
     method: 'GET',
-    credentials: 'include',
   })
 
   if (!response.ok) {
@@ -52,9 +52,8 @@ export async function fetchStockSummaryApi({
   }
 
   const query = params.toString() ? `?${params.toString()}` : ''
-  const response = await fetch(`${API_BASE}/stock-expenses/summary${query}`, {
+  const response = await apiFetch(`${API_BASE}/stock-expenses/summary${query}`, {
     method: 'GET',
-    credentials: 'include',
   })
 
   if (!response.ok) {
@@ -66,12 +65,11 @@ export async function fetchStockSummaryApi({
 }
 
 export async function createStockExpenseApi(payload) {
-  const response = await fetch(`${API_BASE}/stock-expenses`, {
+  const response = await apiFetch(`${API_BASE}/stock-expenses`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    credentials: 'include',
     body: JSON.stringify(payload),
   })
 
@@ -84,12 +82,11 @@ export async function createStockExpenseApi(payload) {
 }
 
 export async function updateStockExpenseApi(id, payload) {
-  const response = await fetch(`${API_BASE}/stock-expenses/${id}`, {
+  const response = await apiFetch(`${API_BASE}/stock-expenses/${id}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
     },
-    credentials: 'include',
     body: JSON.stringify(payload),
   })
 
@@ -102,9 +99,8 @@ export async function updateStockExpenseApi(id, payload) {
 }
 
 export async function deleteStockExpenseApi(id) {
-  const response = await fetch(`${API_BASE}/stock-expenses/${id}`, {
+  const response = await apiFetch(`${API_BASE}/stock-expenses/${id}`, {
     method: 'DELETE',
-    credentials: 'include',
   })
 
   if (!response.ok) {

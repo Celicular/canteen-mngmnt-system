@@ -1,4 +1,5 @@
 import { API_BASE } from './config'
+import { apiFetch } from './client'
 
 export async function fetchSalesApi({
   date,
@@ -26,9 +27,8 @@ export async function fetchSalesApi({
   }
 
   const query = params.toString() ? `?${params.toString()}` : ''
-  const response = await fetch(`${API_BASE}/sales${query}`, {
+  const response = await apiFetch(`${API_BASE}/sales${query}`, {
     method: 'GET',
-    credentials: 'include',
   })
 
   if (!response.ok) {
@@ -65,9 +65,8 @@ export async function fetchSalesSummaryApi({
   }
 
   const query = params.toString() ? `?${params.toString()}` : ''
-  const response = await fetch(`${API_BASE}/sales/summary${query}`, {
+  const response = await apiFetch(`${API_BASE}/sales/summary${query}`, {
     method: 'GET',
-    credentials: 'include',
   })
 
   if (!response.ok) {
@@ -79,9 +78,8 @@ export async function fetchSalesSummaryApi({
 }
 
 export async function fetchOverviewStatsApi() {
-  const response = await fetch(`${API_BASE}/sales/overview-stats`, {
+  const response = await apiFetch(`${API_BASE}/sales/overview-stats`, {
     method: 'GET',
-    credentials: 'include',
   })
 
   if (!response.ok) {
@@ -100,12 +98,11 @@ export async function createSaleApi({
   meal_type,
   items,
 }) {
-  const response = await fetch(`${API_BASE}/sales`, {
+  const response = await apiFetch(`${API_BASE}/sales`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    credentials: 'include',
     body: JSON.stringify({
       customer_name,
       customer_phone,
@@ -128,12 +125,11 @@ export async function updateSaleApi(
   id,
   { customer_name, customer_phone, ward_number, patient_id, meal_type, items }
 ) {
-  const response = await fetch(`${API_BASE}/sales/${id}`, {
+  const response = await apiFetch(`${API_BASE}/sales/${id}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
     },
-    credentials: 'include',
     body: JSON.stringify({
       customer_name,
       customer_phone,
@@ -153,9 +149,8 @@ export async function updateSaleApi(
 }
 
 export async function deleteSaleApi(id) {
-  const response = await fetch(`${API_BASE}/sales/${id}`, {
+  const response = await apiFetch(`${API_BASE}/sales/${id}`, {
     method: 'DELETE',
-    credentials: 'include',
   })
 
   if (!response.ok) {

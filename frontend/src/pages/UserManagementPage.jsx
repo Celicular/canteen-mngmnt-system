@@ -89,10 +89,10 @@ function UserManagementPage() {
 
   return (
     <>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 2.5, md: 3 } }}>
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 2 }}>
           <Box>
-            <Typography variant="h5" sx={{ fontWeight: 700, color: '#0f172a', fontSize: '1.45rem' }}>
+            <Typography variant="h5" sx={{ fontWeight: 700, color: '#0f172a', fontSize: { xs: '1.25rem', sm: '1.45rem' } }}>
               User Management
             </Typography>
             <Typography variant="body2" sx={{ color: '#64748b', fontSize: '0.875rem', mt: 0.25 }}>
@@ -111,7 +111,7 @@ function UserManagementPage() {
               fontWeight: 600,
               fontSize: '0.875rem',
               px: 2.5,
-              py: 1.1,
+              py: 1,
               boxShadow: '0 4px 14px rgba(15, 23, 42, 0.15)',
               '&:hover': {
                 backgroundColor: '#1e293b',
@@ -169,8 +169,8 @@ function UserManagementPage() {
               <CircularProgress size={32} sx={{ color: '#0f172a' }} />
             </Box>
           ) : (
-            <TableContainer>
-              <Table>
+            <TableContainer sx={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+              <Table sx={{ minWidth: 600 }}>
                 <TableHead sx={{ backgroundColor: '#f8fafc' }}>
                   <TableRow>
                     <TableCell sx={{ color: '#475569', fontWeight: 600, fontSize: '0.825rem', py: 1.5 }}>User</TableCell>

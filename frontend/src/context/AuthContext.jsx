@@ -21,6 +21,7 @@ export function AuthProvider({ children }) {
         setUser(data)
       })
       .catch(() => {
+        localStorage.removeItem('canteen_access_token')
         setUser(null)
       })
       .finally(() => {

@@ -106,10 +106,10 @@ function ItemsPage() {
   })
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3.5 }}>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 2.5, md: 3.5 } }}>
+      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, gap: 2 }}>
         <Box>
-          <Typography variant="h5" sx={{ fontWeight: 700, color: '#0f172a', fontSize: '1.45rem' }}>
+          <Typography variant="h5" sx={{ fontWeight: 700, color: '#0f172a', fontSize: { xs: '1.25rem', sm: '1.45rem' } }}>
             Menu Items
           </Typography>
           <Typography variant="body2" sx={{ color: '#64748b', fontSize: '0.875rem', mt: 0.25 }}>
@@ -128,7 +128,7 @@ function ItemsPage() {
             fontWeight: 600,
             fontSize: '0.875rem',
             px: 2.5,
-            py: 1.1,
+            py: 1,
             boxShadow: '0 4px 14px rgba(15, 23, 42, 0.15)',
             '&:hover': {
               backgroundColor: '#1e293b',
@@ -181,7 +181,7 @@ function ItemsPage() {
           }}
         />
 
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+        <Box sx={{ display: 'flex', flexWrap: { xs: 'nowrap', sm: 'wrap' }, overflowX: { xs: 'auto', sm: 'visible' }, maxWidth: '100%', pb: { xs: 0.5, sm: 0 }, gap: 1 }}>
           {['All', 'Snacks', 'Meals', 'Beverages', 'Desserts', 'General'].map((cat) => {
             const isSelected = selectedCategory === cat
             return (
@@ -189,6 +189,7 @@ function ItemsPage() {
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
                 sx={{
+                  flexShrink: 0,
                   px: 1.75,
                   py: 0.6,
                   borderRadius: '20px',

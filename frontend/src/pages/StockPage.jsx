@@ -300,11 +300,11 @@ function StockPage() {
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3.5 }}>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 2.5, md: 3.5 } }}>
+      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', md: 'center' }, gap: 2 }}>
         <Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Typography variant="h5" sx={{ fontWeight: 700, color: '#0f172a', fontSize: '1.45rem' }}>
+            <Typography variant="h5" sx={{ fontWeight: 700, color: '#0f172a', fontSize: { xs: '1.25rem', sm: '1.45rem' } }}>
               Stock & Expenditures
             </Typography>
             <Box
@@ -326,7 +326,7 @@ function StockPage() {
           </Typography>
         </Box>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, flexWrap: 'wrap', width: { xs: '100%', md: 'auto' } }}>
           <Tooltip title="Reload stock data">
             <IconButton
               onClick={loadStockData}
@@ -617,8 +617,8 @@ function StockPage() {
           gap: 2,
         }}
       >
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 1.5 }}>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, alignItems: { xs: 'stretch', md: 'center' }, justifyContent: 'space-between', gap: 1.5 }}>
+          <Box sx={{ display: 'flex', flexWrap: { xs: 'nowrap', sm: 'wrap' }, overflowX: { xs: 'auto', sm: 'visible' }, maxWidth: '100%', pb: { xs: 0.5, sm: 0 }, gap: 0.75 }}>
             {PRESETS.map((preset) => {
               const isSelected = activePreset === preset
               return (
@@ -626,6 +626,7 @@ function StockPage() {
                   key={preset}
                   onClick={() => handlePresetClick(preset)}
                   sx={{
+                    flexShrink: 0,
                     px: 1.75,
                     py: 0.55,
                     borderRadius: '10px',
@@ -648,7 +649,7 @@ function StockPage() {
             })}
           </Box>
 
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+          <Box sx={{ display: 'flex', flexWrap: { xs: 'nowrap', sm: 'wrap' }, overflowX: { xs: 'auto', sm: 'visible' }, maxWidth: '100%', pb: { xs: 0.5, sm: 0 }, gap: 0.75 }}>
             {['All', 'Groceries', 'Dairy', 'Vegetables', 'Disposables', 'General'].map((cat) => {
               const isSelected = selectedCategory === cat
               return (
@@ -656,6 +657,7 @@ function StockPage() {
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
                   sx={{
+                    flexShrink: 0,
                     px: 1.5,
                     py: 0.45,
                     borderRadius: '8px',
@@ -771,8 +773,8 @@ function StockPage() {
             </Button>
           </Box>
         ) : (
-          <TableContainer>
-            <Table>
+          <TableContainer sx={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+            <Table sx={{ minWidth: 700 }}>
               <TableHead sx={{ backgroundColor: '#f8fafc', borderBottom: '1.5px solid #e2e8f0' }}>
                 <TableRow>
                   <TableCell sx={{ fontWeight: 700, color: '#475569', fontSize: '0.825rem' }}>Date</TableCell>

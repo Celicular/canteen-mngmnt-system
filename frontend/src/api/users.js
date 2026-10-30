@@ -1,9 +1,9 @@
 import { API_BASE } from './config'
+import { apiFetch } from './client'
 
 export async function fetchUsersApi() {
-  const response = await fetch(`${API_BASE}/users`, {
+  const response = await apiFetch(`${API_BASE}/users`, {
     method: 'GET',
-    credentials: 'include',
   })
 
   if (!response.ok) {
@@ -15,12 +15,11 @@ export async function fetchUsersApi() {
 }
 
 export async function createUserApi({ username, password, full_name, user_type, avatar }) {
-  const response = await fetch(`${API_BASE}/users`, {
+  const response = await apiFetch(`${API_BASE}/users`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    credentials: 'include',
     body: JSON.stringify({
       username,
       password,
@@ -39,9 +38,8 @@ export async function createUserApi({ username, password, full_name, user_type, 
 }
 
 export async function deleteUserApi(username) {
-  const response = await fetch(`${API_BASE}/users/${encodeURIComponent(username)}`, {
+  const response = await apiFetch(`${API_BASE}/users/${encodeURIComponent(username)}`, {
     method: 'DELETE',
-    credentials: 'include',
   })
 
   if (!response.ok) {

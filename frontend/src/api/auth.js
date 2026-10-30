@@ -1,12 +1,12 @@
 import { API_BASE } from './config'
+import { apiFetch } from './client'
 
 export async function loginApi({ username, password, saveUser = false, quickLogin = false }) {
-  const response = await fetch(`${API_BASE}/auth/login`, {
+  const response = await apiFetch(`${API_BASE}/auth/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    credentials: 'include',
     body: JSON.stringify({
       username,
       password,
@@ -20,13 +20,16 @@ export async function loginApi({ username, password, saveUser = false, quickLogi
     throw new Error(errorData.detail || 'Login failed')
   }
 
-  return response.json()
+  const data = await response.json()
+  if (data.access_token) {
+    localStorage.setItem('canteen_access_token', data.access_token)
+  }
+  return data
 }
 
 export async function fetchCurrentUserApi() {
-  const response = await fetch(`${API_BASE}/auth/me`, {
+  const response = await apiFetch(`${API_BASE}/auth/me`, {
     method: 'GET',
-    credentials: 'include',
   })
 
   if (!response.ok) {
@@ -37,14 +40,15 @@ export async function fetchCurrentUserApi() {
 }
 
 export async function logoutApi() {
-  const response = await fetch(`${API_BASE}/auth/logout`, {
-    method: 'POST',
-    credentials: 'include',
-  })
-
-  if (!response.ok) {
-    throw new Error('Logout failed')
+  try {
+    const response = await apiFetch(`${API_BASE}/auth/logout`, {
+      method: 'POST',
+    })
+    if (!response.ok) {
+      throw new Error('Logout failed')
+    }
+    return response.json()
+  } finally {
+    localStorage.removeItem('canteen_access_token')
   }
-
-  return response.json()
 }

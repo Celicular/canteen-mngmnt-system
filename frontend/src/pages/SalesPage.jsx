@@ -192,11 +192,11 @@ function SalesPage() {
     summary.total_orders > 0 ? (summary.total_revenue / summary.total_orders).toFixed(2) : '0.00'
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3.5 }}>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 2.5, md: 3.5 } }}>
+      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', md: 'center' }, gap: 2 }}>
         <Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Typography variant="h5" sx={{ fontWeight: 700, color: '#0f172a', fontSize: '1.45rem' }}>
+            <Typography variant="h5" sx={{ fontWeight: 700, color: '#0f172a', fontSize: { xs: '1.25rem', sm: '1.45rem' } }}>
               Sales & Billing
             </Typography>
             <Box
@@ -218,7 +218,7 @@ function SalesPage() {
           </Typography>
         </Box>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, flexWrap: 'wrap', width: { xs: '100%', md: 'auto' } }}>
           <Box
             sx={{
               display: 'flex',
@@ -228,6 +228,7 @@ function SalesPage() {
               border: '1px solid #e2e8f0',
               p: 0.5,
               gap: 0.5,
+              flexWrap: 'wrap',
             }}
           >
             <Button
@@ -576,7 +577,7 @@ function SalesPage() {
           }}
         />
 
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+        <Box sx={{ display: 'flex', flexWrap: { xs: 'nowrap', sm: 'wrap' }, overflowX: { xs: 'auto', sm: 'visible' }, maxWidth: '100%', pb: { xs: 0.5, sm: 0 }, gap: 1 }}>
           {['All', 'Breakfast', 'Lunch', 'Snack', 'Dinner'].map((type) => {
             const isSelected = selectedMealFilter === type
             return (
@@ -584,6 +585,7 @@ function SalesPage() {
                 key={type}
                 onClick={() => setSelectedMealFilter(type)}
                 sx={{
+                  flexShrink: 0,
                   px: 2,
                   py: 0.7,
                   borderRadius: '20px',
@@ -667,8 +669,8 @@ function SalesPage() {
             </Button>
           </Box>
         ) : (
-          <TableContainer>
-            <Table>
+          <TableContainer sx={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+            <Table sx={{ minWidth: 720 }}>
               <TableHead sx={{ backgroundColor: '#f8fafc', borderBottom: '1.5px solid #e2e8f0' }}>
                 <TableRow>
                   <TableCell sx={{ width: 48, p: 1 }} />

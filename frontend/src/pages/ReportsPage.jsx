@@ -399,11 +399,11 @@ function ReportsPage() {
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3.5 }}>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 2 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 2.5, md: 3.5 } }}>
+      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', md: 'center' }, gap: 2 }}>
         <Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Typography variant="h5" sx={{ fontWeight: 700, color: '#0f172a', fontSize: '1.45rem' }}>
+            <Typography variant="h5" sx={{ fontWeight: 700, color: '#0f172a', fontSize: { xs: '1.25rem', sm: '1.45rem' } }}>
               Reports & Financial Auditing
             </Typography>
             <Box
@@ -425,7 +425,7 @@ function ReportsPage() {
           </Typography>
         </Box>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, flexWrap: 'wrap', width: { xs: '100%', md: 'auto' } }}>
           <Tooltip title="Reload report data">
             <IconButton
               onClick={loadReportData}
@@ -509,7 +509,7 @@ function ReportsPage() {
           gap: 2,
         }}
       >
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 1.5 }}>
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, alignItems: { xs: 'stretch', md: 'center' }, justifyContent: 'space-between', gap: 1.5 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <DateRangeOutlinedIcon sx={{ color: '#0f172a', fontSize: 20 }} />
             <Typography sx={{ fontWeight: 700, color: '#0f172a', fontSize: '0.925rem' }}>
@@ -517,7 +517,7 @@ function ReportsPage() {
             </Typography>
           </Box>
 
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+          <Box sx={{ display: 'flex', flexWrap: { xs: 'nowrap', sm: 'wrap' }, overflowX: { xs: 'auto', sm: 'visible' }, maxWidth: '100%', pb: { xs: 0.5, sm: 0 }, gap: 0.75 }}>
             {PRESETS.map((preset) => {
               const isSelected = activePreset === preset
               return (
@@ -525,6 +525,7 @@ function ReportsPage() {
                   key={preset}
                   onClick={() => handlePresetClick(preset)}
                   sx={{
+                    flexShrink: 0,
                     px: 1.75,
                     py: 0.55,
                     borderRadius: '10px',
@@ -987,8 +988,8 @@ function ReportsPage() {
             </Typography>
           </Box>
         ) : (
-          <TableContainer>
-            <Table>
+          <TableContainer sx={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+            <Table sx={{ minWidth: 680 }}>
               <TableHead sx={{ backgroundColor: '#f8fafc', borderBottom: '1.5px solid #e2e8f0' }}>
                 <TableRow>
                   <TableCell sx={{ width: 48, p: 1 }} />

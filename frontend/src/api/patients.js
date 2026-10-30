@@ -1,10 +1,10 @@
 import { API_BASE } from './config'
+import { apiFetch } from './client'
 
 export async function fetchPatientsApi(search = '') {
   const query = search ? `?search=${encodeURIComponent(search)}` : ''
-  const response = await fetch(`${API_BASE}/patients${query}`, {
+  const response = await apiFetch(`${API_BASE}/patients${query}`, {
     method: 'GET',
-    credentials: 'include',
   })
 
   if (!response.ok) {
@@ -16,12 +16,11 @@ export async function fetchPatientsApi(search = '') {
 }
 
 export async function createPatientApi({ name, mobile_number, ward_number }) {
-  const response = await fetch(`${API_BASE}/patients`, {
+  const response = await apiFetch(`${API_BASE}/patients`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    credentials: 'include',
     body: JSON.stringify({
       name,
       mobile_number,

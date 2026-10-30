@@ -90,27 +90,27 @@ function DashboardPage() {
   const avgOrderToday = todayOrders > 0 ? (todayRevenue / todayOrders).toFixed(2) : '0.00'
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3.5 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 2.5, md: 3.5 } }}>
       <Card
         elevation={0}
         sx={{
-          p: 3,
-          borderRadius: '22px',
+          p: { xs: 2, sm: 2.5, md: 3 },
+          borderRadius: { xs: '16px', sm: '22px' },
           border: '1px solid #e2e8f0',
           backgroundColor: '#ffffff',
           boxShadow: '0 10px 30px -10px rgba(15, 23, 42, 0.05)',
           display: 'flex',
-          flexWrap: 'wrap',
-          alignItems: 'center',
+          flexDirection: { xs: 'column', md: 'row' },
+          alignItems: { xs: 'stretch', md: 'center' },
           justifyContent: 'space-between',
-          gap: 2.5,
+          gap: 2,
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <AvatarBadge avatarId={user?.avatar || 'executive'} size={56} />
-          <Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, mb: 0.25 }}>
-              <Typography variant="h5" sx={{ fontWeight: 700, color: '#0f172a', fontSize: '1.3rem' }}>
+          <AvatarBadge avatarId={user?.avatar || 'executive'} size={52} />
+          <Box sx={{ minWidth: 0 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.25, flexWrap: 'wrap' }}>
+              <Typography variant="h5" sx={{ fontWeight: 700, color: '#0f172a', fontSize: { xs: '1.15rem', sm: '1.3rem' } }}>
                 Welcome, {user?.full_name || 'Staff User'}!
               </Typography>
               <UserTypeChip type={user?.user_type || user?.role} />
@@ -121,7 +121,7 @@ function DashboardPage() {
           </Box>
         </Box>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, flexWrap: 'wrap' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', width: { xs: '100%', md: 'auto' } }}>
           <Tooltip title="Refresh overview metrics">
             <IconButton
               onClick={loadStats}
@@ -147,9 +147,9 @@ function DashboardPage() {
               backgroundColor: '#0f172a',
               color: '#ffffff',
               fontWeight: 700,
-              fontSize: '0.9rem',
-              px: 2.75,
-              py: 1.1,
+              fontSize: '0.875rem',
+              px: { xs: 2, sm: 2.75 },
+              py: 1,
               boxShadow: '0 4px 14px rgba(15, 23, 42, 0.2)',
               '&:hover': {
                 backgroundColor: '#1e293b',
@@ -169,9 +169,9 @@ function DashboardPage() {
               borderColor: '#cbd5e1',
               color: '#0f172a',
               fontWeight: 600,
-              fontSize: '0.875rem',
-              px: 2.25,
-              py: 1,
+              fontSize: '0.85rem',
+              px: 2,
+              py: 0.95,
               '&:hover': {
                 borderColor: '#94a3b8',
                 backgroundColor: '#f8fafc',
@@ -191,9 +191,9 @@ function DashboardPage() {
               borderColor: '#cbd5e1',
               color: '#0f172a',
               fontWeight: 600,
-              fontSize: '0.875rem',
-              px: 2.25,
-              py: 1,
+              fontSize: '0.85rem',
+              px: 2,
+              py: 0.95,
               '&:hover': {
                 borderColor: '#94a3b8',
                 backgroundColor: '#f8fafc',
@@ -214,9 +214,9 @@ function DashboardPage() {
                 borderColor: '#cbd5e1',
                 color: '#0f172a',
                 fontWeight: 600,
-                fontSize: '0.875rem',
-                px: 2.25,
-                py: 1,
+                fontSize: '0.85rem',
+                px: 2,
+                py: 0.95,
                 '&:hover': {
                   borderColor: '#94a3b8',
                   backgroundColor: '#f8fafc',
@@ -536,8 +536,8 @@ function DashboardPage() {
               </Button>
             </Box>
           ) : (
-            <TableContainer>
-              <Table size="small">
+            <TableContainer sx={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+              <Table size="small" sx={{ minWidth: 540 }}>
                 <TableHead sx={{ backgroundColor: '#f8fafc' }}>
                   <TableRow>
                     <TableCell sx={{ fontWeight: 700, color: '#475569', fontSize: '0.8rem' }}>Receipt #</TableCell>

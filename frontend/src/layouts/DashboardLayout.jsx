@@ -22,12 +22,12 @@ import UserTypeChip from '../components/UserTypeChip'
 import { useAuth } from '../context/AuthContext'
 
 const NAV_ITEMS = [
-  { label: 'Overview', path: '/dashboard', Icon: DashboardOutlinedIcon },
-  { label: 'Sales & Billing', path: '/sales', Icon: ReceiptLongOutlinedIcon },
-  { label: 'Stock & Expenses', path: '/stock', Icon: Inventory2OutlinedIcon },
-  { label: 'Reports', path: '/reports', Icon: AssessmentOutlinedIcon },
-  { label: 'Menu Items', path: '/items', Icon: FastfoodOutlinedIcon, roles: ['admin', 'owner'] },
-  { label: 'User Management', path: '/users', Icon: PeopleAltOutlinedIcon, roles: ['admin', 'owner'] },
+  { label: 'Overview', shortLabel: 'Overview', path: '/dashboard', Icon: DashboardOutlinedIcon },
+  { label: 'Sales & Billing', shortLabel: 'Sales', path: '/sales', Icon: ReceiptLongOutlinedIcon },
+  { label: 'Stock & Expenses', shortLabel: 'Stock', path: '/stock', Icon: Inventory2OutlinedIcon },
+  { label: 'Reports', shortLabel: 'Reports', path: '/reports', Icon: AssessmentOutlinedIcon },
+  { label: 'Menu Items', shortLabel: 'Menu', path: '/items', Icon: FastfoodOutlinedIcon, roles: ['admin', 'owner'] },
+  { label: 'User Management', shortLabel: 'Users', path: '/users', Icon: PeopleAltOutlinedIcon, roles: ['admin', 'owner'] },
 ]
 
 function DashboardLayout({ children }) {
@@ -66,7 +66,7 @@ function DashboardLayout({ children }) {
           transition: 'width 0.2s ease',
           backgroundColor: '#0f172a',
           color: '#f8fafc',
-          display: 'flex',
+          display: { xs: 'none', md: 'flex' },
           flexDirection: 'column',
           justifyContent: 'space-between',
           borderRight: '1px solid #1e293b',
@@ -296,22 +296,49 @@ function DashboardLayout({ children }) {
         <Box
           component="header"
           sx={{
-            height: 68,
+            height: { xs: 58, md: 68 },
             backgroundColor: '#f8fafc',
             borderBottom: '1px solid #e2e8f0',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            px: 3.5,
+            px: { xs: 2, sm: 2.75, md: 3.5 },
             flexShrink: 0,
             zIndex: 10,
           }}
         >
-          <Typography variant="h6" sx={{ fontWeight: 600, color: '#0f172a', fontSize: '1.15rem' }}>
-            {getPageTitle()}
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, minWidth: 0 }}>
+            <Box
+              sx={{
+                display: { xs: 'flex', md: 'none' },
+                width: 34,
+                height: 34,
+                borderRadius: '9px',
+                backgroundColor: '#0f172a',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#f8fafc',
+                flexShrink: 0,
+              }}
+            >
+              <RestaurantIcon sx={{ fontSize: 18 }} />
+            </Box>
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 700,
+                color: '#0f172a',
+                fontSize: { xs: '1.025rem', md: '1.15rem' },
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              {getPageTitle()}
+            </Typography>
+          </Box>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2 } }}>
             <Box sx={{ textAlign: 'right', display: { xs: 'none', sm: 'block' } }}>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
                 <Typography variant="body2" sx={{ fontWeight: 600, color: '#0f172a', lineHeight: 1.2, fontSize: '0.925rem' }}>
@@ -326,8 +353,25 @@ function DashboardLayout({ children }) {
 
             <Tooltip title={`${user?.full_name || 'Admin User'} (@${user?.username || 'admin'})`}>
               <Box>
-                <AvatarBadge avatarId={user?.avatar || 'executive'} size={42} />
+                <AvatarBadge avatarId={user?.avatar || 'executive'} size={36} />
               </Box>
+            </Tooltip>
+
+            <Tooltip title="Logout">
+              <IconButton
+                size="small"
+                onClick={handleLogout}
+                sx={{
+                  display: { xs: 'flex', md: 'none' },
+                  color: '#dc2626',
+                  backgroundColor: '#fee2e2',
+                  borderRadius: '10px',
+                  p: 0.85,
+                  '&:hover': { backgroundColor: '#fecaca' },
+                }}
+              >
+                <LogoutIcon sx={{ fontSize: 18 }} />
+              </IconButton>
             </Tooltip>
           </Box>
         </Box>
@@ -337,7 +381,8 @@ function DashboardLayout({ children }) {
           sx={{
             flex: 1,
             overflowY: 'auto',
-            p: 3.5,
+            p: { xs: 2, sm: 2.75, md: 3.5 },
+            pb: { xs: 10, md: 3.5 },
             '&::-webkit-scrollbar': { width: '6px' },
             '&::-webkit-scrollbar-track': { background: '#eef2f6' },
             '&::-webkit-scrollbar-thumb': { background: '#cbd5e1', borderRadius: '4px' },
@@ -345,6 +390,80 @@ function DashboardLayout({ children }) {
         >
           {children || <Outlet />}
         </Box>
+      </Box>
+
+      <Box
+        component="nav"
+        aria-label="Mobile Navigation Bar"
+        sx={{
+          display: { xs: 'flex', md: 'none' },
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: 64,
+          backgroundColor: '#0f172a',
+          borderTop: '1px solid #1e293b',
+          boxShadow: '0 -4px 20px rgba(15, 23, 42, 0.25)',
+          zIndex: 1100,
+          alignItems: 'center',
+          justifyContent: 'space-around',
+          px: 0.5,
+        }}
+      >
+        {visibleNavItems.map((item) => {
+          const isActive = location.pathname === item.path
+          const Icon = item.Icon
+
+          return (
+            <Box
+              key={item.path}
+              component={Link}
+              to={item.path}
+              sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flex: 1,
+                minWidth: 0,
+                py: 0.75,
+                textDecoration: 'none',
+                color: isActive ? '#ffffff' : '#94a3b8',
+                transition: 'all 0.15s ease',
+                '&:active': { transform: 'scale(0.92)' },
+              }}
+            >
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 36,
+                  height: 28,
+                  borderRadius: '12px',
+                  backgroundColor: isActive ? 'rgba(255, 255, 255, 0.16)' : 'transparent',
+                  mb: 0.35,
+                  transition: 'background-color 0.15s ease',
+                }}
+              >
+                <Icon sx={{ fontSize: 20 }} />
+              </Box>
+              <Typography
+                sx={{
+                  fontSize: '0.68rem',
+                  fontWeight: isActive ? 700 : 500,
+                  color: isActive ? '#ffffff' : '#94a3b8',
+                  lineHeight: 1,
+                  whiteSpace: 'nowrap',
+                  textAlign: 'center',
+                }}
+              >
+                {item.shortLabel || item.label}
+              </Typography>
+            </Box>
+          )
+        })}
       </Box>
     </Box>
   )

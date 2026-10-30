@@ -26,6 +26,15 @@ def load_users() -> dict:
 
 def authenticate_request(request: Request) -> dict:
     token = request.cookies.get("access_token")
+    if token:
+        token = token.strip().strip('"').strip("'")
+    if not token:
+        auth_header = request.headers.get("authorization") or request.headers.get("Authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            token = auth_header[7:].strip().strip('"').strip("'")
+        elif auth_header:
+            token = auth_header.strip().strip('"').strip("'")
+
     if not token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -64,6 +73,8 @@ app.add_middleware(
         "http://127.0.0.1:5173",
         "http://localhost:3000",
         "http://127.0.0.1:3000",
+        "https://canteenmgmt.onrender.com",
+        "https://canteenmgmt.onrender.com/",
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -123,7 +134,7 @@ def health_check():
     return {"status": "ok"}
 
 @app.post("/api/auth/login")
-def login(creds: LoginRequest, response: Response):
+def login(creds: LoginRequest, request: Request, response: Response):
     username = creds.username.strip().lower()
     users = load_users()
     user = users.get(username)
@@ -153,12 +164,16 @@ def login(creds: LoginRequest, response: Response):
     token = bcrypt.hashpw(username.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
     max_age_seconds = 86400 * 7 if creds.save_user else 86400
 
+    is_https = request.url.scheme == "https" or request.headers.get("x-forwarded-proto") == "https"
+    samesite_val = "none" if is_https else "lax"
+    secure_val = True if is_https else False
+
     response.set_cookie(
         key="access_token",
         value=token,
         httponly=True,
-        samesite="lax",
-        secure=False,
+        samesite=samesite_val,
+        secure=secure_val,
         max_age=max_age_seconds,
         path="/",
     )
@@ -169,6 +184,8 @@ def login(creds: LoginRequest, response: Response):
         "user_type": user.get("user_type", user.get("role", "worker")),
         "full_name": user["full_name"],
         "avatar": user.get("avatar", "executive"),
+        "access_token": token,
+        "token_type": "bearer",
     }
 
 @app.get("/api/auth/me")
@@ -183,12 +200,14 @@ def get_current_user(request: Request):
     }
 
 @app.post("/api/auth/logout")
-def logout(response: Response):
+def logout(request: Request, response: Response):
+    is_https = request.url.scheme == "https" or request.headers.get("x-forwarded-proto") == "https"
     response.delete_cookie(
         key="access_token",
         path="/",
         httponly=True,
-        samesite="lax",
+        samesite="none" if is_https else "lax",
+        secure=is_https,
     )
     return {"message": "Logged out successfully"}
 
